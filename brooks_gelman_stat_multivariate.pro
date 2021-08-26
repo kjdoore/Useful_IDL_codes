@@ -1,17 +1,17 @@
-function gelman_rubin_stat_multivariate,chain
+function brooks_gelman_stat_multivariate,chain
 ;+
 ; NAME:
-;	GELMAN_RUBIN_STAT_MULTIVARIATE
+;	BROOKS_GELMAN_STAT_MULTIVARIATE
 ; PURPOSE:
 ;	To compute the Gelman-Rubin statistic (r_hat) [1] of multiple multivariate Markov chains
 ; EXPLANATION:
-;	Use multiple Markov chains to compute their Gelman-Rubin statistic using
+;	Use multiple Markov chains to compute their Brooks-Gelman statistic using
 ;    the multivariate approach as given by Brooks and Gelman (1998).
 ;    Uses the within-chain variance W, and between-chain variance
 ;    B to compare convergence of the chains.
 ;
 ; CALLING SEQUENCE:
-;	gelman_rubin_stat_multivariate(chain)
+;	brooks_gelman_stat_multivariate(chain)
 ;
 ; INPUTS:
 ;	chain - a P x N x M array of M Markov chains of N elements and P
@@ -20,20 +20,20 @@ function gelman_rubin_stat_multivariate,chain
 ;               as described above.
 ;;
 ; OUTPUTS:
-;	r_hat - the Gelman-Rubin statistic of the chains, the sqrt(r_hat) should be
+;	r_hat - the Brooks-Gelman statistic of the chains, the sqrt(r_hat) should be
 ;            less than or equal to 1.2 if convergence of the chains was reached.
 ;            An exact value of 1 mean the chains are exactly the same.
 ;
 ; EXAMPLE USAGE:
 ;   IDL> chain = randomn(seed,10,1000,3)
-;   IDL> r_hat = gelman_rubin_stat_multivariate(chain)
+;   IDL> r_hat = brooks_gelman_stat_multivariate(chain)
 ;   IDL> print,r_hat
 ;
 ;   IDL> chain = randomn(seed,1000,3)
 ;   IDL> save, chain, filename='path-to-chain.sav'
 ;   IDL> ; some time later...
 ;   IDL> restore, 'path-to-chain.sav'
-;   IDL> r_hat = gelman_rubin_stat(chain)
+;   IDL> r_hat = brooks_gelman_stat_multivariate(chain)
 ;   IDL> print,r_hat
 ;
 ; REFERENCE:
@@ -48,7 +48,7 @@ function gelman_rubin_stat_multivariate,chain
 
 ; Check arguments
   if (n_params() ne 1 ) then begin
-    print,'Syntax - gelman_rubin_stat(chain)'
+    print,'Syntax - brooks_gelman_stat_multivariate(chain)'
     return,!null
   endif
 

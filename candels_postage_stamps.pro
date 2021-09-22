@@ -408,10 +408,10 @@ pro candels_postage_stamps, ra, dec, redshift, outfile_loc, img_file_loc,$
  
 ; Since already sorted by field, add the number of galaxies already sorted by section
  n_cosmos = n_elements(where(field eq 'cosmos', /null))
- n_goodsn = n_elements(where(field eq 'egs', /null))
- n_goodss = n_elements(where(field eq 'goodsn', /null))
- n_uds = n_elements(where(field eq 'goodss', /null))
- n_egs = n_elements(where(field eq 'uds', /null))
+ n_egs = n_elements(where(field eq 'egs', /null))
+ n_goodsn = n_elements(where(field eq 'goodsn', /null))
+ n_goodss = n_elements(where(field eq 'goodss', /null))
+ n_uds = n_elements(where(field eq 'uds', /null))
 
  section_sort = lonarr(n_elements(ra))
  section_sort[where(field eq 'cosmos', /null)] = sort(section[where(field eq 'cosmos', /null)])

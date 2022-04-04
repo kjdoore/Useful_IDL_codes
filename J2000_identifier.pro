@@ -25,6 +25,7 @@ function J2000_identifier, ra, dec
 ;
 ; HISTORY:
 ;   2021-03-31: Created (E.B. Monson)
+;   2022-04-04: Edited so that input dec would not be overriden (K. Doore)
 ;-
     compile_opt idl2
     on_error,2
@@ -50,10 +51,9 @@ function J2000_identifier, ra, dec
     if (dec ge 0) then sign = '+' else sign = '-'
 
     ; Get declination strings
-    dec = abs(dec)
-    dec_dd = floor(dec)
-    dec_mm = floor(60 * (dec - dec_dd))
-    dec_ss = 3600 * dec - 3600 * dec_dd - 60 * dec_mm
+    dec_dd = floor(abs(dec))
+    dec_mm = floor(60 * (abs(dec) - dec_dd))
+    dec_ss = 3600 * abs(dec) - 3600 * dec_dd - 60 * dec_mm
 
     decstr = sign + string(dec_dd, format='(I02)') + string(dec_mm, format='(I02)') + string(dec_ss, format='(F04.1)')
 

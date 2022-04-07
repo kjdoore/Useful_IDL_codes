@@ -1,5 +1,5 @@
 pro candels_postage_stamps, ra, dec, redshift, outfile_loc, img_file_loc,$
-                            phys_size=phys_size
+                            phys_size=phys_size, name=name
 ;+
 ; NAME:
 ;	CANDELS_POSTAGE_STAMPS
@@ -52,6 +52,9 @@ pro candels_postage_stamps, ra, dec, redshift, outfile_loc, img_file_loc,$
 ; OPTIONAL INPUTS:
 ;   PHYS_SIZE    - a scalar containing the assumed physical radius of the galaxies in kpc
 ;                    (Default = 15kpc)
+;   NAME         - a string vector of length M containing the name of each galaxy to be used
+;                    for naming the output files. If not specified, then the name will be the
+;                    J2000 name generated from the RA and DEC 
 ;
 ; NOTES:
 ;   Requires the IDL Astronomy User's Library and Red IDL cosmology package,
@@ -61,6 +64,10 @@ pro candels_postage_stamps, ra, dec, redshift, outfile_loc, img_file_loc,$
 ;
 ; REVISON HISTORY:
 ;	Written by K. Doore, 9/16/2021
+;   Revised by K. Doore, 9/23/2021
+;     - Allowed for the input of user specified names
+;   Revised by K. Doore, 4/6/2022
+;     - Included header in output file
 ;-
  compile_opt idl2
  On_error,2
@@ -131,21 +138,34 @@ pro candels_postage_stamps, ra, dec, redshift, outfile_loc, img_file_loc,$
  endif else begin
    phys_size = 15.
  endelse
-
-
-; Generate the J2000 name for each galaxy
- ra_hh = floor(ra/15.)
- ra_mm = floor(4.*ra-60.*ra_hh)
- ra_ss =  3600.d0*ra/15.d0-3600.d0*ra_hh-60.d0*ra_mm
- rastr = string(ra_hh, format='(I02)') + string(ra_mm, format='(I02)') + string(ra_ss, format='(F05.2)')
- 
- sign = replicate('+',n_elements(ra))
- sign[where(dec lt 0,/null)] = '-'
- dec_dd = floor(abs(dec))
- dec_mm = floor(60.*(abs(dec)-dec_dd))
- dec_ss = 3600.d0*abs(dec)-3600.d0*dec_dd-60.d0*dec_mm
- decstr = sign+string(dec_dd, format='(I02)')+string(dec_mm, format='(I02)')+string(dec_ss, format='(F04.1)')
- name = 'J' + rastr + decstr
+ if n_elements(name) gt 0 then begin
+  if size(name,/type) ne 7 then begin
+    print, 'Galaxy names are not of type string'
+    return
+  endif
+  if size(name, /n_dim) ne 1 then begin
+    print, 'Galaxy names must be a vector'
+    return
+  endif
+  if n_elements(name) ne n_elements(ra) then begin
+    print, 'Galaxy name vector must be the same length as the Right Ascension, Declination, and Redshift'
+    return
+  endif
+ endif else begin
+   ; Generate the J2000 name for each galaxy
+   ra_hh = floor(ra/15.)
+   ra_mm = floor(4.*ra-60.*ra_hh)
+   ra_ss =  3600.d0*ra/15.d0-3600.d0*ra_hh-60.d0*ra_mm
+   rastr = string(ra_hh, format='(I02)') + string(ra_mm, format='(I02)') + string(ra_ss, format='(F05.2)')
+   
+   sign = replicate('+',n_elements(ra))
+   sign[where(dec lt 0,/null)] = '-'
+   dec_dd = floor(abs(dec))
+   dec_mm = floor(60.*(abs(dec)-dec_dd))
+   dec_ss = 3600.d0*abs(dec)-3600.d0*dec_dd-60.d0*dec_mm
+   decstr = sign+string(dec_dd, format='(I02)')+string(dec_mm, format='(I02)')+string(dec_ss, format='(F04.1)')
+   name = 'J' + rastr + decstr
+ endelse
 
 
 ; Determine approximately what field the galaxies are located
@@ -525,14 +545,14 @@ pro candels_postage_stamps, ra, dec, redshift, outfile_loc, img_file_loc,$
 
    ; Combine images into 3D RGB array   
    subim_size = size(subim_r, /dimen)
-   color_image = dblarr(3, subim_size[0], subim_size[1])
-   color_image[0,*,*] = subim_r
-   color_image[1,*,*] = subim_g
-   color_image[2,*,*] = subim_b
+   color_image = dblarr(subim_size[0], subim_size[1], 3)
+   color_image[*,*,0] = subim_r
+   color_image[*,*,1] = subim_g
+   color_image[*,*,2] = subim_b
 
 
    ; Save the postage stamp to FITS file
-   mwrfits, color_image, outfile_loc+name[i]+'_postage_stamp.fits', /create
+   mwrfits, color_image, outfile_loc+name[i]+'_postage_stamp.fits', subhdr_r, /create
    print,'Postage Stamp '+strtrim(string(i+1),2)+' of '+strtrim(string(n_elements(ra)),2)+' generated'
  endfor
 

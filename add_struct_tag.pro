@@ -62,8 +62,8 @@ function add_struct_tag, struct, tag, values, name=name, no_match=no_match
 ;--------------------
 ;   - 2022/03/30: Created (Keith Doore)
 ;-
- ;Compile_opt idl2
- ;On_error,2
+ Compile_opt idl2
+ On_error,2
 
 ; Error handling
  nstruct = n_elements(struct)

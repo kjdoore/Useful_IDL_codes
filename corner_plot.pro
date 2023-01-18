@@ -9,11 +9,11 @@ function corner_plot, distribution, distribution_labels, distribution_color=dist
 ;+
 ; Name
 ; ----
-;	CORNER_PLOT
+;   CORNER_PLOT
 ;
 ; Purpose
 ; -------
-;	Creates a corner multivariate distribution plot for a sampled
+;   Creates a corner multivariate distribution plot for a sampled
 ;   distribution. Diagonal plots contain the histogram of each parameter
 ;   in the distribution, and the lower off-diagonal plots contain
 ;   the contours of the 2D distributions of corresponding parameters.
@@ -32,7 +32,7 @@ function corner_plot, distribution, distribution_labels, distribution_color=dist
 ;
 ; Inputs
 ; ------
-;	``distribution`` : int, float, or double array(Nparam, Nsamples, Ndist)
+;   ``distribution`` : int, float, or double array(Nparam, Nsamples, Ndist)
 ;       The multivariate distribution. A value of ``Ndist > 1`` indicates that
 ;       multiple multivariate distributions for the same parameters are included 
 ;       and are to be overplotted (see examples).
@@ -97,7 +97,7 @@ function corner_plot, distribution, distribution_labels, distribution_color=dist
 ;
 ; Output
 ; ------
-;	``plt`` : object
+;   ``plt`` : object
 ;       The plot object containing the SED plot.
 ;
 ; Examples
@@ -118,7 +118,7 @@ function corner_plot, distribution, distribution_labels, distribution_color=dist
 ; Notes
 ; -----
 ;   - To save the output plot, which is an IDL object, use:
-;     ``x.save,'/YOUR_FOLDER/FILE_NAME.FILE_TYPE'``
+;     ``plt.save,'/YOUR_FOLDER/FILE_NAME.FILE_TYPE'``
 ;   - See https://www.harrisgeospatial.com/docs/Save_Method.html for file types 
 ;     and more details on saving graphics
 ;
@@ -373,13 +373,14 @@ function corner_plot, distribution, distribution_labels, distribution_color=dist
  ; Plot the histograms along the diagonal
  for i=0, Nparam-1 do begin
 
+   if n_elements(tickinterval) ne 0 then xtickinterval=tickinterval[i]
    position_current = [position[0] + (tot_width/Nparam * i) + (tot_width/Nparam * padding), $
                        position[3] - (tot_height/Nparam*(i+1)) + (tot_height/Nparam * padding), $
                        position[0] + (tot_width/Nparam * (i+1)), position[3] - (tot_height/Nparam * i)]
 
    ; Plot the first distribution for the given parameter in the current window with the specified properties
    plt = plot(binloc[0:(nbins[i, 0]-1), i, 0], pdf[0:(nbins[i, 0]-1), i, 0], /stair, /current, $
-              xtitle=distribution_labels[i], ytitle=ytitle[i], xtickinterval=tickinterval[i], $
+              xtitle=distribution_labels[i], ytitle=ytitle[i], xtickinterval=xtickinterval, $
               position=position_current, xrange=distribution_range[*, i], yrange=yrange, $
               xtickfont_size=font_size, ytickfont_size=font_size, color=distribution_color[0], $
               thick=distribution_thick, _extra=_extra_plot)
@@ -395,7 +396,7 @@ function corner_plot, distribution, distribution_labels, distribution_color=dist
      plt['axis0'].showtext = 0
    endelse
 
-   ; Over lot the remaining distributions for the given parameter
+   ; Overplot the remaining distributions for the given parameter
    for j=0, Ndist-1 do begin
       if j ne 0 then plt = plot(binloc[0:(nbins[i, j]-1), i, j], pdf[0:(nbins[i, j]-1), i, j], /stair, $
                                 /over, color=distribution_color[j], thick=distribution_thick, _extra=_extra_plot)

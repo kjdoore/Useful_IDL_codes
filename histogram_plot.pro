@@ -1,218 +1,155 @@
-function histogram_plot,distribution,BINLOC=BINLOC,BINSIZE=BINSIZE,MINIMUM=MINIMUM,$
-           MAXIMUM=MAXIMUM,NBINS=NBINS,PEAK=PEAK,SQUAREROOT=SQUAREROOT,PDF=PDF,_EXTRA=_extra_plot
+function histogram_plot, distribution, min=min, max=max, nbins=nbins, binsize=binsize, peak=peak, $
+                         swap_axes=swap_axes, _extra=_extra_plot
 ;+
-; NAME:
+; Name
+; ----
 ;   HISTOGRAM_PLOT
-; PURPOSE:
-;   To create basic histogram plot without any fuss
-; EXPLANATION: 
-;   Creates a histogram of the input distribution. Historgrams are plotted using Scott's 
-;     normal reference rule (see https://en.wikipedia.org/wiki/Histogram).
 ;
-; CALLING SEQUENCE:
-;   corner_plot, distribution, [BINLOC=BINLOC, BINSIZE=BINSIZE, MINIMUM=MINIMUM,$
-;                MAXIMUM=MAXIMUM, NBINS=NBINS, PEAK=PEAK, /SQUAREROOT]
+; Purpose
+; -------
+;   Creates a histogram of the input distribution. Historgrams are plotted using Scott's normal
+;   reference rule (see https://en.wikipedia.org/wiki/Histogram) or user specified bins.
 ;
-; INPUTS:
-;   distribution - a vector containing the values to be binned and plotted in a histogram.
-;                    NaN values are ignored
+; Calling Sequence
+; ----------------
+;   ::
 ;
-; OPTIONAL INPUTS:
-;   BINLOC  - A vector specifying the edge locations of each bin. Does not need to be 
-;               regularly gridded. If not present, then the bin locations are determined 
-;               from BINSIZE, MAXIMUM, MINIMUM, or NBINS. This input takes top priority if 
-;               specified (see NOTE below).
-;   BINSIZE - A positive scalar specifying the size of each bin of the histogram. If 
-;                not present, the bin size is automatically calculated using Scott's 
-;                normal reference rule. This input takes bottom priority if specified 
-;                (see NOTE below).
-;   MINIMUM - A scalar specifying the minimum value to consider. If not present, then the
-;               smallest value of distribution is used.
-;   MAXIMUM - A scalar specifying the maximum value to consider. If not present, then the
-;               largest value of distribution is used.
-;   NBINS   - A scalar specifying the number of bins to use. If not present, then the 
-;               number of bins are determined from BINSIZE, MAXIMUM, and MINIMUM. This
-;               input takes second priority if specified (see NOTE below).
-;   PEAK    - A non-zero scalar specifying the peak value of the histogram. The
-;                histogram is normalized to have a maximum value equal to the value 
-;                in PEAK. If PEAK is negative, the histogram is inverted.
+;       plt = histogram_plot(distribution [, min = , max = , nbins = , binsize = , peak = , $
+;                            /swap_axes, _extra=_extra_plot])
 ;
-;   All optional inputs for the basic plot function are passed by reference into this 
-;       function (i.e., xlabel, color, thickness, etc.)
+; Inputs
+; ------
+;   ``distribution`` : int, float, or double array(Nsamples)
+;       The distribution to be binned and plotted in a histogram. NaN values are ignored.
 ;
-;   NOTE on determining the bins: The key part of creating a histogram is the size and
-;      location of the bins. This function is versatile in how it determines this. First,
-;      if BINLOC is present, then the bin sizes and locations are directly specified by 
-;      this vector and no other action is taken to determine size and location. Therefore,
-;      any input values for BINSIZE, MINIMUM, MAXIMUM, and NBINS are ignored. If BINLOC is 
-;      not specified, then the function checks if NBINS is specified. If given, the bin 
-;      edge locations are determined by [MINIMUM:MAXIMUM:(MAXIMUM-MINIMUM)/NBINS], and 
-;      BINSIZE is ignored. If neither BINLOC or NBINS is specified, then the bin edge 
-;      locations are determined from BINSIZE by [MINIMUM:MAXIMUM:BINSIZE]. If BINLOC, 
-;      BINSIZE, nor NBINS are given, then the bin size and locations are determined 
-;      automatically using Scott's normal reference rule.
-;      Summary of how bin size and locations are determined in priority order:
-;          1: Specified directly in BINLOC 
-;          2: Generated from NBINS via [MINIMUM:MAXIMUM:(MAXIMUM-MINIMUM)/NBINS]
-;          3: Generated from BINSIZE via [MINIMUM:MAXIMUM:BINSIZE]
-;          4: Automatically generated via Scott's normal reference rule
+; Optional Inputs
+; ---------------
+;   ``min`` : int, float, or double scalar
+;       The minimum value to consider for the histogram. (Default = ``min(distribution)``)
+;   ``max`` : int, float, or double scalar
+;       The maximum value to consider for the histogram. (Default = ``max(distribution)``)
+;   ``nbins`` : int, float, or double scalar
+;       The number of equally spaced bins to use for the histogram. If not set, then the
+;       number of bins to use is determined from ``binsize``, ``min``, and ``max``; or
+;       Scott's normal reference rule (see note below).
+;   ``binsize`` : int, float, or double scalar
+;       The width of each bin of the histogram. If not set, then the bin width is
+;       determined from Scott's normal reference rule (see note below).
+;   ``peak`` : int, float, or double scalar
+;       The peak value to normalize the histogram. If ``peak`` is negative, the histogram
+;       is inverted.
+;   ``swap_axes`` : flag
+;       If set, then the x and y axes are swapped, allowing for the histogram to be
+;       plotted on the y axis
 ;
-; OPTIONAL KEYWORD INPUT:
-;   /SQUAREROOT   - if set, then the number of bins is the square root of
-;                     the number of data points
+; Output
+; ------
+;   ``plt`` : object
+;       The plot object containing the SED plot.
 ;
-;   All optional keyword inputs for the basic plot function are passed by reference into 
-;       this function (i.e., overplot, current, nodata, buffer, etc.)
+; Examples
+; --------
+;   .. highlight:: idl
+;   ::
 ;
-; OUTPUTS:
-;   x - plot object
+;       distribution = randomn(seed, 1000)
+;       plt = histogram_plot(distribution)
 ;
-; OPTIONAL OUTPUTS:
-;   PDF - A vector containing the density function of the distribution
+; Notes
+; -----
+;   - To save the output plot, which is an IDL object, use:
+;     ``plt.save,'/YOUR_FOLDER/FILE_NAME.FILE_TYPE'``
+;   - See https://www.harrisgeospatial.com/docs/Save_Method.html for file types 
+;     and more details on saving graphics
+;   - When determining the bins: The key part of creating a histogram is the number of equally 
+;     spaced bins. This function is versatile in how it determines the bins. First,
+;     the function checks if ``nbins`` is specified. If not specified, then the
+;     number of bins is determined from ``binsize`` by ``n_elements([min:max:binsize]) - 1``.
+;     If `nbins`` nor ``binsize`` are given, then the number of bins is determined 
+;     automatically using Scott's normal reference rule.
 ;
-; EXAMPLE USAGE:
-;     IDL> distribution = randomn(seed,1000)
-;     IDL> x = histogram_plot(distribution)
-;     IDL> help, x
-;
-; NOTES:
-;   To save the output plot, which is an IDL object, use:
-;      x.save,'/YOUR_FOLDER/FILE_NAME.FILE_TYPE'
-;   See https://www.harrisgeospatial.com/docs/Save_Method.html for file types 
-;      and more details on saving graphics
-;
-; REVISON HISTORY:
-;   Written by K. Doore, 3/31/2021
+; Modification History
+; --------------------
+;   - 2021/03/31: Created (Keith Doore)
+;   - 2022/01/20: Added the keyword ``swap_axes`` (Keith Doore)
+;   - 2023/01/18: Updated input names to better match built in IDL histogram function (Keith Doore)
+;   - 2023/01/18: Updated to require equally spaced bins (Keith Doore)
+;   - 2023/01/18: Updated documentation (Keith Doore)
+;   - 2023/01/18: Updated error handling (Keith Doore)
 ;-
-  Compile_opt idl2
-  On_error,2
+ ;Compile_opt idl2
+ ;On_error,2
 
-; Check for allowable type and size of inputs
-  if size(distribution,/type) lt 2 or size(distribution,/type) gt 5 then begin
-    print,'distribution is incorrect data type'
-    return,0
-  endif 
-  if size(distribution,/n_dim) ne 1 then begin
-    print,'distribution must be one-dimensional vector'
-    return,0
-  endif
-  
-  if n_elements(BINLOC) gt 0 then begin
-    if size(BINLOC,/type) lt 2 or size(BINLOC,/type) gt 5 then begin
-      print,'BINLOC is incorrect data type'
-      return,0
-    endif 
-    if size(BINLOC,/n_dim) ne 1 then begin
-      print,'BINLOC must be one-dimensional vector'
-      return,0
-    endif
-    NBINS=n_elements(binloc)-1
-  endif
+; Error Handling
+ if n_elements(distribution) eq 0 then message, 'Variable is undefined: DISTRIBUTION.'
+ if size(distribution, /type) lt 2 or size(distribution, /type) gt 5 then $
+   message, 'DISTRIBUTION must be of type int, float, or double.'
+ if size(distribution, /n_dim) ne 1 then $
+   message, 'DISTRIBUTION must be a 1-D array.'
+ Nsamples = n_elements(distribution)
+
+ if n_elements(min) ne 0 then begin
+   if size(min, /type) lt 2 or size(min, /type) gt 5 then $
+     message, 'MIN must be of type int, float, or double.'
+   if size(min, /n_dim) ne 0 then $
+     message, 'MIN must be a scalar.'
+ endif else min = min(distribution, /nan)
+
+ if n_elements(max) ne 0 then begin
+   if size(max, /type) lt 2 or size(max, /type) gt 5 then $
+     message, 'MAX must be of type int, float, or double.'
+   if size(max, /n_dim) ne 0 then $
+     message, 'MAX must be a scalar.'
+   if max le min then $
+     message, 'MAX must be a value greater than MIN.'
+ endif else max = max(distribution, /nan)
+
+ if n_elements(nbins) ne 0 then begin
+   if size(nbins, /type) lt 2 or size(nbins, /type) gt 5 then $
+     message, 'NBINS must be of type int, float, or double.'
+   if size(nbins, /n_dim) ne 0 then $
+     message, 'NBINS must be a scalar.'
+   if nbins le 0 then $
+     message, 'NBINS must be a positive value.'
+ endif
+
+ if n_elements(binsize) ne 0 then begin
+   if size(binsize, /type) lt 2 or size(binsize, /type) gt 5 then $
+     message, 'BINSIZE must be of type int, float, or double.'
+   if size(binsize, /n_dim) ne 0 then $
+     message, 'BINSIZE must be a scalar.'
+   if binsize le 0 then $
+     message, 'BINSIZE must be a positive value.'
+
+   if n_elements(nbins) eq 0 then nbins = n_elements([min:max:binsize]) - 1
+ endif
+
+ if n_elements(peak) ne 0 then begin
+   if size(peak, /type) lt 2 or size(peak, /type) gt 5 then $
+     message, 'PEAK must be of type int, float, or double.'
+   if size(peak, /n_dim) ne 0 then $
+     message, 'PEAK must be a scalar.'
+   if peak eq 0 then $
+     message, 'PEAK must be a non-zero value.'
+ endif
 
 
-  if n_elements(MINIMUM) gt 0 then begin
-    if size(MINIMUM,/type) lt 2 or size(MINIMUM,/type) gt 5 then begin
-      print,'MINIMUM is incorrect data type'
-      return,0
-    endif 
-    if size(MINIMUM,/n_dim) ne 0 then begin
-      print,'MINIMUM must be single value scalar'
-      return,0
-    endif
-  endif else begin
-    MINIMUM=min(distribution,/nan)
-  endelse
-
-  if n_elements(MAXIMUM) gt 0 then begin
-    if size(MAXIMUM,/type) lt 2 or size(MAXIMUM,/type) gt 5 then begin
-      print,'MAXIMUM is incorrect data type'
-      return,0
-    endif 
-    if size(MAXIMUM,/n_dim) ne 0 then begin
-      print,'MAXIMUM must be single value scalar'
-      return,0
-    endif
-  endif else begin
-    MAXIMUM=max(distribution,/nan)
-  endelse
-
-  if n_elements(NBINS) gt 0 then begin
-    if size(NBINS,/type) lt 2 or size(NBINS,/type) gt 5 then begin
-      print,'NBINS is incorrect data type'
-      return,0
-    endif 
-    if size(NBINS,/n_dim) ne 0 then begin
-      print,'NBINS must be single value scalar'
-      return,0
-    endif
-    if n_elements(BINLOC) eq 0 then begin
-      BINLOC=[MINIMUM:MAXIMUM:(MAXIMUM-MINIMUM)/double(NBINS)]
-    endif
+; Determine locations if generating automatically
+  if n_elements(nbins) eq 0 then begin
+    binsize = 3.49d * stddev(distribution) / (double(Nsamples))^(1/3.d)
+    nbins = ceil((max - min)/binsize)
   endif
 
-  if n_elements(BINSIZE) gt 0 then begin
-    if size(BINSIZE,/type) lt 2 or size(BINSIZE,/type) gt 5 then begin
-      print,'BINSIZE is incorrect data type'
-      return,0
-    endif 
-    if size(BINSIZE,/n_dim) ne 0 then begin
-      print,'BINSIZE must be single value scalar'
-      return,0
-    endif
-    if n_elements(BINLOC) eq 0 then begin
-      if (MAXIMUM-MINIMUM) lt BINSIZE then begin
-        print,'BINSIZE must be smaller than the data range'
-        return,0
-      endif
-      BINLOC=[MINIMUM:MAXIMUM:BINSIZE]
-      NBINS=n_elements(binloc)-1
-    endif
-  endif
+; Determine histogram for each distribution and normalize
+ pdf = histogram(distribution, nbins=nbins, min=min, max=max, locations=binloc)
+ if n_elements(peak) ne 0 then pdf = double(pdf)/max(double(pdf)) * peak
 
-  if n_elements(PEAK) gt 0 then begin
-    if size(PEAK,/type) lt 2 or size(PEAK,/type) gt 5 then begin
-      print,'PEAK is incorrect data type'
-      return,0
-    endif 
-    if size(PEAK,/n_dim) ne 0 then begin
-      print,'PEAK must be single value scalar'
-      return,0
-    endif
-    if PEAK eq 0 then begin
-      print,'PEAK must be non-zero'
-      return,0
-    endif
+ if ~keyword_set(swap_axes) then begin
+   plt = plot(binloc, pdf, /stair, _extra=_extra_plot)
+ endif else begin
+   plt = plot(pdf, binloc, /stair, _extra=_extra_plot)
+ endelse
 
-  endif
-
-; Determine BINLOC if generating automatically
-  if n_elements(BINLOC) eq 0 then begin
-    N = (size(distribution,/dim))[0]
-    binsize = 3.49*stddev(distribution)/(N)^(1/3.)
-    nbins = ceil((MAXIMUM-MINIMUM)/binsize)
-    if keyword_set(SQUAREROOT) then nbins = ceil(sqrt(N))
-    BINLOC=[MINIMUM:MAXIMUM:(MAXIMUM-MINIMUM)/NBINS]
-  endif
-
-; Determine histogram for each distribution and normalize to PEAK if specified
-  pdf = dblarr(nbins)
-  for i=0,(nbins-1) do begin      
-    if i ne (nbins-1) then begin
-      pdf[i] = n_elements(where(distribution ge binloc[i] and distribution lt binloc[i+1],/null))
-    endif else begin
-      pdf[i] = n_elements(where(distribution ge binloc[i] and distribution le binloc[i+1],/null))
-    endelse
-  endfor
-  if n_elements(PEAK) gt 0 then pdf=pdf/max(pdf)*PEAK
-
-; Plot the histogram
-  xpoints=[binloc,binloc]
-  xpoints=xpoints[sort(xpoints)]
-  ypoints=dblarr(n_elements(xpoints))
-  ypoints[1:-2]=pdf[([indgen(nbins),indgen(nbins)])[sort([indgen(nbins),indgen(nbins)])]]
-
-  x=plot(xpoints,ypoints,_EXTRA=_extra_plot)
-
-  return,x
+ return, plt
 
 end

@@ -154,7 +154,7 @@ function corner_plot, distribution, distribution_labels, distribution_color=dist
  if n_elements(distribution) eq 0 then message, 'Variable is undefined: DISTRIBUTION.'
  if size(distribution, /type) lt 2 or size(distribution, /type) gt 5 then $
    message, 'DISTRIBUTION must be of type int, float, or double.'
- if size(distribution, /n_dim) lt 1 or size(distribution, /n_dim) lt 3 then $
+ if size(distribution, /n_dim) lt 1 or size(distribution, /n_dim) gt 3 then $
    message, 'DISTRIBUTION must be a 2-D or 3-D array.'
  Nparam = (size(distribution, /dim))[0] 
  Nsamples = (size(distribution, /dim))[1]

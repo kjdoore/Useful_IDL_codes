@@ -77,8 +77,8 @@ function histogram_plot, distribution, min=min, max=max, nbins=nbins, binsize=bi
 ;   - 2023/01/18: Updated documentation (Keith Doore)
 ;   - 2023/01/18: Updated error handling (Keith Doore)
 ;-
- ;Compile_opt idl2
- ;On_error,2
+ Compile_opt idl2
+ On_error,2
 
 ; Error Handling
  if n_elements(distribution) eq 0 then message, 'Variable is undefined: DISTRIBUTION.'

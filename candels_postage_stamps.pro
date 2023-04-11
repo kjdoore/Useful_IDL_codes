@@ -28,7 +28,7 @@ pro candels_postage_stamps, ra, dec, redshift, outfile_loc, img_file_loc,$
 ;       COSMOS: https://archive.stsci.edu/missions/hlsp/candels/cosmos/cos-tot/v1.0/
 ;               (e.g., hlsp_candels_hst_acs_cos-tot-sect11_f606w_v1.0_drz.fits and 
 ;                      hlsp_candels_hst_acs_cos-tot-sect11_f814w_v1.0_drz.fits for section 11)
-;       EGS: help,
+;       EGS: https://archive.stsci.edu/missions/hlsp/candels/egs/egs-tot/v1.0/
 ;               (e.g., hlsp_candels_hst_acs_egs-tot-30mas-section11_f606w_v1.0_drz.fits and 
 ;                      hlsp_candels_hst_acs_egs-tot-30mas-section11_f814w_v1.0_drz.fits for section 11)
 ;       UDS: https://archive.stsci.edu/missions/hlsp/candels/uds/uds-tot/v1.0/

@@ -41,6 +41,12 @@ function J2000_identifier, ra, dec
         return,!null
     endif
 
+    if size(ra,/n_ele) ne size(dec,/n_ele) then begin
+        print,'RA and Dec must be the same size'
+        return,!null
+    endif
+    niden = size(ra,/n_ele)
+
     ; Get right ascension strings
     ra_hh = floor(ra / 15)
     ra_mm = floor(4 * ra - 60 * ra_hh)
@@ -48,7 +54,8 @@ function J2000_identifier, ra, dec
 
     rastr = string(ra_hh, format='(I02)') + string(ra_mm, format='(I02)') + string(ra_ss, format='(F05.2)')
 
-    if (dec ge 0) then sign = '+' else sign = '-'
+    sign = replicate('+',niden)
+    sign[where(dec lt 0,/null)] = '-'
 
     ; Get declination strings
     dec_dd = floor(abs(dec))
